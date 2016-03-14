@@ -27,8 +27,10 @@ namespace Proto.Service.Modules.V3
             Get["/testmsgpack"] = parameters => TestMsgPack(true);
             Get["/testmsgpack2"] = parameters => TestMsgPack(false);
 
+
             if (_serializerMsgPack == null)
             {
+                Console.WriteLine("HotelDetailsModule Setup Serializer");
                 // Initialise the serializer we're going to use for Message Pack
                 var context = new MsgPack.Serialization.SerializationContext();
                 context.SerializationMethod = SerializationMethod.Map;
@@ -38,30 +40,28 @@ namespace Proto.Service.Modules.V3
 
         public Response TestJson()
         {
-            return HandleJson<ByHotelIdRequestModel>();
+            return HandleJson();
         }
 
         public Response TestProtoBuf()
         {
-            return HandleProtoBuf<ByHotelIdRequestModel>();
+            return HandleProtoBuf();
         }
         public Response TestMsgPack(bool useMap)
         {
-            return HandleMsgPack<ByHotelIdRequestModel>(useMap);
+            return HandleMsgPack(useMap);
         }
 
-        public Response HandleJson<T>()
+        public Response HandleJson()
         {
-            var request = this.Bind<T>();
             var response = (Response)(JsonConvert.SerializeObject(DummyData(testHotelCount,testRoomCount)));
             response.ContentType = "application/json";
             response.StatusCode = HttpStatusCode.OK;
             response.Headers.Add("Cache-Control", string.Format("public, max-age={0}", (15 * 60)));
             return response;
         }
-        public Response HandleProtoBuf<T>()
+        public Response HandleProtoBuf()
         {
-            var request = this.Bind<T>();
             return new Response
             {
                 ContentType = "application/x-protobuf",
@@ -69,9 +69,8 @@ namespace Proto.Service.Modules.V3
                 Contents = stream => DummyDataPb(testHotelCount, testRoomCount).WriteTo(stream)
             };
         }
-        public Response HandleMsgPack<T>(bool useMap)
+        public Response HandleMsgPack(bool useMap)
         {
-            var request = this.Bind<T>();
 
             MessagePackSerializer<HotelDetailsResponseModel> serializer ;
             if (useMap)
