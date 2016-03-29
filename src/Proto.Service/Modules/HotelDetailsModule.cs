@@ -15,8 +15,6 @@ namespace Proto.Service.Modules.V3
 {
     public class HotelDetailsModule : NancyModule
     {
-        private readonly int testHotelCount = 50;
-        private readonly int testRoomCount = 10;
         private static MessagePackSerializer<HotelDetailsResponseModel> _serializerMsgPack ;
 
         public HotelDetailsModule()
@@ -54,7 +52,7 @@ namespace Proto.Service.Modules.V3
 
         public Response HandleJson()
         {
-            var response = (Response)(JsonConvert.SerializeObject(DummyData(testHotelCount,testRoomCount)));
+            var response = (Response)(JsonConvert.SerializeObject(DataStub.DummyData(DataStub.testHotelCount,DataStub.testRoomCount)));
             response.ContentType = "application/json";
             response.StatusCode = HttpStatusCode.OK;
             response.Headers.Add("Cache-Control", string.Format("public, max-age={0}", (15 * 60)));
@@ -66,7 +64,7 @@ namespace Proto.Service.Modules.V3
             {
                 ContentType = "application/x-protobuf",
                 StatusCode = HttpStatusCode.OK,
-                Contents = stream => DummyDataPb(testHotelCount, testRoomCount).WriteTo(stream)
+                Contents = stream => DataStub.DummyDataPb(DataStub.testHotelCount, DataStub.testRoomCount).WriteTo(stream)
             };
         }
         public Response HandleMsgPack(bool useMap)
@@ -86,80 +84,10 @@ namespace Proto.Service.Modules.V3
             {
                 ContentType = "application/x-msgpack",
                 StatusCode = HttpStatusCode.OK,
-                Contents = stream => serializer.Pack(stream, DummyData(testHotelCount, testRoomCount))
+                Contents = stream => serializer.Pack(stream, DataStub.DummyData(DataStub.testHotelCount, DataStub.testRoomCount))
             };
         }
 
-        private static HotelDetailsResponseModel DummyData(int hotelCount, int roomCount)
-        {
-            IList<Room> rooms = new List<Room>();
-            for (int i = 0; i < roomCount; i++)
-            {
-                var tmp = new Room
-                {
-                    Id = i,
-                    InvCode = "inv",
-                    HideRackRate = false,
-                    RackRate = "1.0m"
-                };
-                rooms.Add(tmp);
-            }
-
-            IList<Model.Hotel> hotels = new List<Model.Hotel>();
-            for (int j = 0; j < hotelCount; j++)
-            {
-                var tmp = new Model.Hotel
-                {
-                    HotelCode = "Code",
-                    Id = j,
-                    ProviderName = "Provider",
-                    HotelCurrency = "GBP",
-                    HotelStatus = "1",
-                    Rooms = rooms
-                };
-                hotels.Add(tmp);
-            }
-
-            var mod = new HotelDetailsResponseModel
-            {
-                Hotels = hotels
-            };
-
-            return mod;
-
-        }
-        private static Proto.Hotel.HotelDetailsResponseModel DummyDataPb(int hotelCount, int roomCount)
-        {
-            var mod = new Proto.Hotel.HotelDetailsResponseModel();
-            for (int j = 0; j < hotelCount; j++)
-            {
-                var tmp = new Proto.Hotel.Hotel
-                {
-                    HotelCode = "Code",
-                    Id = j.ToString(),
-                    ProviderName = "Provider",
-                    HotelCurrency = "GBP",
-                    HotelStatus = "1"
-                };
-
-                for (int i = 0; i < roomCount; i++)
-                {
-                    var tmpR = new Proto.Hotel.Room
-                    {
-                        Id = i,
-                        InvCode = "inv" + i,
-                        HideRackRate = false,
-                        RackRate = "1.0"
-                    };
-                    tmp.Rooms.Add(tmpR);
-                }
-                mod.Add(tmp);
-            }
-
-
-            return mod;
-
-        }
     }
 
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using Nancy.Hosting.Self;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace Proto.Service
 {
@@ -8,18 +9,26 @@ namespace Proto.Service
     {
         static void Main()
         {
+            SpinUpNancy();
+            zeromqserver.SpinUpZeroMQ();
+
+            Console.ReadKey();
+            Console.WriteLine("Stopped. Good bye!");
+        }
+        static async void SpinUpNancy()
+        {
             var config = new HostConfiguration();
             //config.RewriteLocalhost = false;
             config.UrlReservations.CreateAutomatically = true;
-            var nancyHost = new NancyHost(config,new Uri("http://localhost:8888/"));
-            nancyHost.Start();
-
+            NancyHost nh =  await Task.Run(() => RunNancy(config));
             Console.WriteLine("Nancy now listening - navigating to http://localhost:8888/. Press enter to stop");
-            Console.ReadKey();
 
-            nancyHost.Stop();
-
-            Console.WriteLine("Stopped. Good bye!");
+        }
+        static NancyHost RunNancy(HostConfiguration cfg)
+        {
+            var nancyHost = new NancyHost(cfg,new Uri("http://localhost:8888/"));
+            nancyHost.Start();
+            return nancyHost;
         }
     }
 }
